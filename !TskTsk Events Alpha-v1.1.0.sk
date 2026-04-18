@@ -1,0 +1,1654 @@
+# TskTsk Events
+
+# On Entity Dye
+import:
+    io.papermc.paper.event.entity.EntityDyeEvent
+event "EntityDyeEvent": # Cancellable
+    patterns:
+        [on] dye [(of %entitydatas%)] 
+        [on] [(%entitydatas%)] dye
+    event-values: player, color, entity
+    check:
+        if expr-1 is set:
+            if all:
+                event-entity is not sheep
+                event-entity is not cat
+                event-entity is not tamed wolf
+            then:
+                stop
+            else if event-entity isn't expr-1:
+                expr-1 is set
+                stop
+            continue
+        else if expr-1 is set:
+            continue
+on EntityDyeEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::color} to event.getColor()
+    set {_event} to (custom event "EntityDyeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+        if event.getEntity() is tamed wolf:
+            set the color of event.getEntity() to event.getEntity()'s color # Wolf Cancel Event Desync Fix || I know this looks like nonsense lol, bear with me.
+
+# Block Dispense Loot/Item
+
+import:
+    org.bukkit.event.block.BlockDispenseLootEvent
+
+event "BlockDispenseLootEvent": # Cancellable
+    patterns:
+        [on] block dispense loot[-| ][table]
+    event-values: loot table, player, item
+
+on BlockDispenseLootEvent:
+    set {_eventValues::lootTable} to event.getLootTable()
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::item} to event.DispensedLoot()
+    set {_event} to (custom event "BlockDispenseLootEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+
+# Strider Temperature Change
+
+import:
+    org.bukkit.event.entity.StriderTemperatureChangeEvent as StriderTempChange
+
+event "StriderTempChange":
+    patterns:
+        [on] strider temp[erature] change
+    event-values: entity, boolean # If the strider is shivering
+
+on StriderTempChange:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::boolean} to event.isShivering()
+    set {_event} to (custom event "StriderTempChange" using event-values {_eventValues::*})
+    call {_event}
+
+
+# Villager Acquire Trade
+
+import:
+    org.bukkit.event.entity.VillagerAcquireTradeEvent as AcquireTrade
+
+event "AcquireTrade":
+    patterns:
+        [on] [villager] acquire [new] trade
+        [on] [merchant] acquire [new] trade
+    event-values: entity, merchantRecipe
+    
+on AcquireTrade:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::recipe} to event.getRecipe()
+    broadcast {_eventValues::*}
+    set {_event} to (custom event "AcquireTrade" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+
+# Pufferfish State Change (Bloat/Debloat)
+import:
+    io.papermc.paper.event.entity.PufferFishStateChangeEvent
+
+event "PufferFishStateChangeEvent":
+    patterns:
+        [on] puffer[ |-]fish (state|bloat) chang(e|ing)
+        [on] puffer[ |-]fish bloat[ing]
+    event-values: entity, integer
+
+on PufferFishStateChangeEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::integer} to event.getNewPuffState()
+    set {_event} to (custom event "PufferFishStateChangeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Entity Pose Change
+
+import:
+    org.bukkit.event.entity.EntityPoseChangeEvent
+
+event "EntityPoseChangeEvent":
+    patterns:
+        [on] [entity] pose change
+    event-values: pose, entity
+
+on EntityPoseChangeEvent:
+    set {_eventValues::pose} to event.getPose() # You can also do pose of event.getEntity() if you're using SkBee :p
+    set {_eventValues::entity} to event.getEntity()
+    set {_event} to (custom event "EntityPoseChangeEvent" using event-values {_eventValues::*})
+
+# On Whitelist Toggle
+
+import:
+    com.destroystokyo.paper.event.server.WhitelistToggleEvent
+
+event "WhitelistToggleEvent":
+    patterns:
+        [on] whitelist Toggle
+    event-values: boolean
+
+on WhitelistToggleEvent:
+    set {_eventValues::boolean} to event.isEnabled()
+    set {_event} to (custom event "WhitelistToggleEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Elder Guardian Appearance
+
+import:
+    io.papermc.paper.event.entity.ElderGuardianAppearanceEvent
+
+event "ElderGuardianAppearanceEvent":
+    patterns:
+        [on] elder[ |-]guardian appearance
+    event-values: entity, player
+
+on ElderGuardianAppearanceEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::player} to event.getAffectedPlayer()
+    set {_event} to (custom event "ElderGuardianAppearanceEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Ender Dragon Change Phase
+
+import:
+    org.bukkit.event.entity.EnderDragonChangePhaseEvent
+
+event "EnderDragonChangePhaseEvent":
+    patterns:
+        [on] ender[ |-]dragon change phase
+        [on] ender[ |-]dragon phase change
+    event-values: entity
+
+on EnderDragonChangePhaseEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::newphase} to event.getNewPhase()
+    set {_eventValues::currentphase} to event.getCurrentPhase()
+    set {_event} to (custom event "EnderDragonChangePhaseEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Ender Dragon Fireball Hit
+
+import:
+    com.destroystokyo.paper.event.entity.EnderDragonFireballHitEvent
+
+event "EnderDragonFireballHitEvent":
+    patterns:
+        [on] ender[ |-]dragon fireball (hit|colli(sion|de))
+    event-values: projectile, entities, particle effect
+
+on EnderDragonFireballHitEvent:
+    set {_eventValues::projectile} to event.getEntity()
+    set {_eventValues::entities} to event.getTargets()
+    set {_eventValues::visualEffect} to event.getAreaEffectCloud()
+    set {_event} to (custom event "EnderDragonFireballHitEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Ender Dragon Flame
+
+import:
+    com.destroystokyo.paper.event.entity.EnderDragonFlameEvent
+
+event "EnderDragonFlameEvent":
+    patterns:
+        [on] ender[ |-]dragon flame
+    event-values: entity, particle effect
+
+on EnderDragonFlameEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::particleEffect} to event.getAreaEffectCloud()
+    set {_event} to (custom event "EnderDragonFireballHitEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Ender Dragon Shoot Fireball
+
+import:
+    com.destroystokyo.paper.event.entity.EnderDragonShootFireballEvent
+
+event "EnderDragonShootFireballEvent":
+    patterns:
+        [on] ender[ |-]dragon [shoot] fireball
+    event-values: entity, projectile
+
+on EnderDragonShootFireballEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::projectile} to event.getFireball()
+    set {_event} to (custom event "EnderDragonShootFireballEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Enderman Attack Player
+
+import:
+    com.destroystokyo.paper.event.entity.EndermanAttackPlayerEvent
+
+event "EndermanAttackPlayerEvent":
+    patterns:
+        [on] ender[ |-]man attack player
+    event-values: entity, player
+
+on EndermanAttackPlayerEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::player} to event.getPlayer()
+    set {_event} to (custom event "EndermanAttackPlayerEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Enderman Escape
+
+import:
+    com.destroystokyo.paper.event.entity.EndermanEscapeEvent
+
+event "EndermanEscapeEvent":
+    patterns:
+        [on] ender[ |-]man escape
+    event-values: entity, string
+
+on EndermanEscapeEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::string} to event.getReason()
+    set {_event} to (custom event "EndermanEscapeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Attempt Smash Attack (not to be confushed with Attempt Attack)
+
+import:
+    io.papermc.paper.event.entity.EntityAttemptSmashAttackEvent
+
+event "EntityAttemptSmashAttackEvent":
+    patterns:
+        [on] [entity] smash attack attempt
+        [on] [entity] attempt[ing] to smash attack [%entitydatas%]
+    event-values: living entity, living entity, itemstack
+
+on EntityAttemptSmashAttackEvent:
+    set {_eventValues::livingEntity::attacker} to event.getEntity()
+    set {_eventValues::livingEntity::victim} to event.getTarget()
+    set {_eventValues::itemstack} to event.getWeapon()
+    set {_event} to (custom event "EntityAttemptSmashAttackEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Entity Enter Block (Bee Enter Hive)
+
+import:
+    org.bukkit.event.entity.EntityEnterBlockEvent
+
+event "EntityEnterBlockEvent":
+    patterns:
+        [on] bee enter[ing] hive
+        [on] [entity] enter[ing] block
+    event-values: entity, block
+
+on EntityEnterBlockEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::block} to event.getBlock()
+    set {_event} to (custom event "EntityEnterBlockEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Exhaustion
+
+import:
+    org.bukkit.event.entity.EntityExhaustionEvent
+
+event "EntityExhaustionEvent":
+    patterns:
+        [on] [entity|player] exhaust[ion]
+    event-values: entity, number, string
+
+on EntityExhaustionEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::number} to event.getExhaustion()
+    set {_eventValues::string} to event.getExhaustionReason()
+    set {_event} to (custom event "EntityExhaustionEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Fertilize Egg
+
+import:
+    io.papermc.paper.event.entity.EntityFertilizeEggEvent
+
+event "EntityFertilizeEggEvent":
+    patterns:
+        [on] [entity] fertilize egg
+    event-values: living entity, living entity, player, itemstack, integer
+
+on EntityFertilizeEggEvent:
+    set {_eventValues::livingEntity::mother} to event.getMother()
+    set {_eventValues::livingEntity::father} to event.getFather()
+    set {_eventValues::player} to event.getBreeder()
+    set {_eventValues::itemstack} to event.getBredWith()
+    set {_eventValues::integer} to event.getExperience()
+    set {_event} to (custom event "EntityFertilizeEggEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Load Crossbow
+
+import: 
+    io.papermc.paper.event.entity.EntityLoadCrossbowEvent
+
+event "EntityLoadCrossbowEvent":
+    patterns:
+        [on] [entity] crossbow load[ing]
+        [on] [entity] load[ing] crossbow
+    event-values: entity, itemstack, equipmentslot
+
+on EntityLoadCrossbowEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::itemstack} to event.getCrossbow()
+    set {_eventValues::equipmentslot} to event.getHand()
+    set {_event} to (custom event "EntityLoadCrossbowEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Place (Triggered when an entity is created in the world by a player "placing" an item on a block.)
+
+import:
+    org.bukkit.event.entity.EntityPlaceEvent
+
+event "EntityPlaceEvent":
+    patterns:
+        [on] [entity] plac(e|ing) [an] entity
+    event-values: entity, player, block, blockface, equipmentslot
+
+on EntityPlaceEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getBlock()
+    set {_eventValues::blockface} to event.getBlockFace()
+    set {_eventValues::equipmentslot} to event.getHand()
+    set {_event} to (custom event "EntityPlaceEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Portal Ready 
+
+import:
+    io.papermc.paper.event.entity.EntityPortalReadyEvent
+
+event "EntityPortalReadyEvent":
+    patterns:
+        [on] [entity] (ready portal|portal ready)
+    event-values: entity, world, type
+
+on EntityPortalReadyEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::world} to event.getTargetWorld()
+    set {_eventValues::type} to event.getPortalType()
+    set {_event} to (custom event "EntityPortalReadyEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Regenerate | Regain Health
+
+import:
+    org.bukkit.event.entity.EntityRegainHealthEvent
+
+event "EntityRegainHealthEvent":
+    patterns:
+        [on] [entity] regen[erate] [health]
+        [on] [entity] regain health
+    event-values: entity, integer, string
+
+on EntityRegainHealthEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::integer} to event.getAmount()
+    set {_eventValues::string} to event.getRegainReason()
+    set {_event} to (custom event "EntityRegainHealthEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Bow Shoot
+
+import:
+    org.bukkit.event.entity.EntityShootBowEvent
+
+event "EntityShootBowEvent":
+    patterns:
+        [on] [entity] (shoot bow|bow shoot)
+    event-values: living entity, itemstack, itemstack, projectile, equipmentslot, number, boolean
+
+on EntityShootBowEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::itemstack::bow} to event.getBow()
+    set {_eventValues::itemstack::consumable} to event.getConsumable()
+    set {_eventValues::projectile} to event.getProjectile()
+    set {_eventValues::equipmentslot} to event.getHand()
+    set {_eventValues::number} to event.getForce()
+    set {_eventValues::boolean} to event.shouldConsumeItem()
+    set {_event} to (custom event "EntityShootBowEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Toggle Sit
+
+import:
+    io.papermc.paper.event.entity.EntityToggleSitEvent
+
+event "EntityToggleSitEvent":
+    patterns:
+        [on] (sit[ting] state change|toggl(e|ing) sit[ting])
+    event-values: entity, boolean
+
+on EntityToggleSitEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::boolean} to event.getSittingState()
+    set {_event} to (custom event "EntityToggleSitEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Toggle Swim
+
+import:
+    org.bukkit.event.entity.EntityToggleSwimEvent
+
+
+event "EntityToggleSwimEvent":
+    patterns:
+        [on] (swim[ming] state change|toggl(e|ing) swim[ming])
+    event-values: entity, boolean
+
+on EntityToggleSwimEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::boolean} to event.getSwimmingState()
+    set {_event} to (custom event "EntityToggleSwimEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Item Transporting Entity Validate
+
+import:
+    io.papermc.paper.event.entity.ItemTransportingEntityValidateTargetEvent
+
+event "ItemTransportingEntityValidateTargetEvent":
+    patterns:
+        [on] item transport[ing] entity validate target
+    event-values: entity, block
+
+on ItemTransportingEntityValidateTargetEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::block} to event.getBlock()
+    set {_event} to (custom event "ItemTransportingEntityValidateTargetEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Piglin Anger
+
+import:
+    org.bukkit.event.entity.PigZombieAngerEvent
+
+event "PigZombieAngerEvent":
+    patterns:
+        [on] pig(lin| zombie) anger
+    event-values: entity, entity, integer
+
+on PigZombieAngerEvent:
+    set {_eventValues::entity::piglin} to event.getEntity()
+    set {_eventValues::entity::target} to event.getTarget()
+    set {_eventValues::integer} to event.getNewAnger()
+    set {_event} to (custom event "PigZombieAngerEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Shulker Duplicate
+
+import:
+    io.papermc.paper.event.entity.ShulkerDuplicateEvent
+
+event "ShulkerDuplicateEvent":
+    patterns:
+        [on] shulker dup(e|licat(ing|ion))
+    event-values: entity, entity
+
+on ShulkerDuplicateEvent:
+    set {_eventValues::entity::entity} to event.getEntity()
+    set {_eventValues::entity::parent} to event.getParent()
+    set {_event} to (custom event "ShulkerDuplicateEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Slime Pathfind
+
+import:
+    com.destroystokyo.paper.event.entity.SlimePathfindEvent
+
+event "SlimePathfindEvent":
+    patterns:
+        [on] slime path[ |-]find
+    event-values: entity
+
+on SlimePathfindEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_event} to (custom event "SlimePathfindEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Tameable Death Message
+
+import:
+    io.papermc.paper.event.entity.TameableDeathMessageEvent
+
+event "TameableDeathMessageEvent":
+    patterns:
+        [on] tame(d|able) death (message|msg)
+    event-values: entity, string
+
+on TameableDeathMessageEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::string} to event.deathMessage()
+    set {_event} to (custom event "TameableDeathMessageEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Turtle Go Home
+
+import:
+    com.destroystokyo.paper.event.entity.TurtleGoHomeEvent
+
+event "TurtleGoHomeEvent":
+    patterns:
+        [on] turtle go[ing] Home
+    event-values: entity
+
+on TurtleGoHomeEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_event} to (custom event "TurtleGoHomeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Turtle Start Digging
+
+import:
+    com.destroystokyo.paper.event.entity.TurtleStartDiggingEvent
+
+event "TurtleStartDiggingEvent":
+    patterns:
+        [on] turtle start[ing] [to] dig[ging]
+    event-values: entity, location
+
+on TurtleStartDiggingEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::location} to event.getLocation()
+    set {_event} to (custom event "TurtleStartDiggingEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Villager Trade Change
+
+import:
+    org.bukkit.event.entity.VillagerCareerChangeEvent
+
+event "VillagerCareerChangeEvent":
+    patterns:
+        [on] [villager] (carrer|job|profession) change
+    event-values: entity, villager profession, string
+
+on VillagerCareerChangeEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::profession} to event.getProfession()
+    set {_eventValues::string} to event.getReason()
+    set {_event} to (custom event "VillagerCareerChangeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Villager Replenish Trade
+
+import:
+    org.bukkit.event.entity.VillagerReplenishTradeEvent
+
+event "VillagerReplenishTradeEvent":
+    patterns:
+        [on] [villager] replenish [trade]
+    event-values: entity, recipe type
+
+on VillagerReplenishTradeEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::recipe} to event.getRecipe()
+    set {_event} to (custom event "VillagerReplenishTradeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Warden Anger Change
+
+import:
+    io.papermc.paper.event.entity.WardenAngerChangeEvent
+
+event "WardenAngerChangeEvent":
+    patterns:
+        [on] warden anger change
+    event-values: entity, entity, integer, integer
+
+on WardenAngerChangeEvent:
+    set {_eventValues::entity::warden} to event.getEntity()
+    set {_eventValues::entity::target} to event.getTarget()
+    set {_eventValues::integer::oldAnger} to event.getOldAnger()
+    set {_eventValues::integer::newAnger} to event.getNewAnger()
+    set {_event} to (custom event "WardenAngerChangeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Witch Consume Potion Event
+
+import:
+    com.destroystokyo.paper.event.entity.WitchConsumePotionEvent
+
+
+event "WitchConsumePotionEvent":
+    patterns:
+        [on] witch (consume|drink|use)( |-)potion
+    event-values: entity, itemstack
+
+on WitchConsumePotionEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::itemstack} to event.getPotion()
+    set {_event} to (custom event "WitchConsumePotionEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Witch Ready Potion
+
+import:
+    com.destroystokyo.paper.event.entity.WitchReadyPotionEvent
+
+event "WitchReadyPotionEvent":
+    patterns:
+        [on] witch ready( |-)potion
+    event-values: entity, itemstack
+
+on WitchReadyPotionEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::itemstack} to event.getPotion()
+    set {_event} to (custom event "WitchReadyPotionEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Witch Throw Potion
+
+import:
+    com.destroystokyo.paper.event.entity.WitchThrowPotionEvent
+
+event "WitchThrowPotionEvent":
+    patterns:
+        [on] witch throw( |-)potion
+    event-values: entity, livingentity, itemstack
+
+on WitchThrowPotionEvent:
+    set {_eventValues::entity} to event.getEntity()
+    set {_eventValues::livingentity} to event.getTarget()
+    set {_eventValues::itemstack} to event.getPotion()
+    set {_event} to (custom event "WitchThrowPotionEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# End of Entity Events
+
+# Abstract Chat
+
+import:
+    io.papermc.paper.event.player.AbstractChatEvent
+
+event "AbstractChatEvent":
+    patterns:
+        [on] abtract chat
+    event-values: string, string, signed message
+
+on AbstractChatEvent:
+    set {_eventValues::string::message} to event.message()
+    set {_eventValues::string::OGmessage} to event.originalMessage()
+    set {_eventValues::signedMessage} to event.signedMessage()
+    set {_event} to (custom event "AbstractChatEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Abstract Respawn
+
+import:
+    io.papermc.paper.event.player.AbstractRespawnEvent
+
+event "AbstractRespawnEvent":
+    patterns:
+        [on] abstract respawn
+    event-values: player, location, boolean, boolean, boolean, string
+
+on AbstractRespawnEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::location} to event.getRespawnLocation()
+    set {_eventValues::boolean::isBedSpawn} to event.isBedSpawn()
+    set {_eventValues::boolean::isAnchorSpawn} to event.isAnchorSpawn()
+    set {_eventValues::boolean::missingRespawnBlock} to event.isMissingRespawnBlock()
+    set {_eventValues::string} to event.isMissingRespawnBlock()
+    set {_event} to (custom event "AbstractRespawnEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Async Player Send Commands (extends CommandSourceStack)
+
+import:
+    com.destroystokyo.paper.event.brigadier.AsyncPlayerSendCommandsEvent
+
+
+event "AsyncPlayerSendCommandsEvent":
+    patterns:
+        [on] async [player] send[s|ing] command[s]
+    event-values: player, node, boolean
+
+on AsyncPlayerSendCommandsEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::node} to event.getCommandNode()
+    set {_eventValues::boolean} to event.hasFiredAsync()
+    set {_event} to (custom event "AsyncPlayerSendCommandsEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Async Player Send Suggestions
+
+import:
+    com.destroystokyo.paper.event.brigadier.AsyncPlayerSendSuggestionsEvent
+
+event "AsyncPlayerSendSuggestionsEvent":
+    patterns:
+        [on] async player send[ing] suggestions
+    event-values: player, strings, string
+
+on AsyncPlayerSendSuggestionsEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::strings} to event.getSuggestions()
+    set {_eventValues::string} to event.getBuffer()
+    set {_event} to (custom event "AsyncPlayerSendSuggestionsEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Async Player Spawn Location
+
+import:
+    io.papermc.paper.event.player.AsyncPlayerSpawnLocationEvent
+
+event "AsyncPlayerSpawnLocationEvent":
+    patterns:
+        [on] async [player] spawn location
+    event-values: player connection, location, boolean # Don't mind the IntelliSkript error, this is an actual thing.
+
+on AsyncPlayerSpawnLocationEvent:
+    set {_eventValues::playerConnection} to event.getConnection()
+    set {_eventValues::location} to event.getSpawnLocation()
+    set {_eventValues::boolean} to event.isNewPlayer()
+    set {_event} to (custom event "AsyncPlayerSpawnLocationEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Client Tick End
+
+import:
+    io.papermc.paper.event.packet.ClientTickEndEvent
+
+event "ClientTickEndEvent":
+    patterns:
+        [on] client tick end[ing]
+    event-values: player
+
+on ClientTickEndEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_event} to (custom event "ClientTickEndEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Illegal Packet Send
+
+import:
+    com.destroystokyo.paper.event.player.IllegalPacketEvent
+
+event "IllegalPacketEvent":
+    patterns:
+        [on] (ill|non( |-))legal packet [being] sen(t|d|ding) [to server]
+    event-values: player, string, string, string
+
+on IllegalPacketEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::string::type} to event.getType()
+    set {_eventValues::string::kickMessage} to event.getKickMessage()
+    set {_eventValues::string::exceptionMessage} to event.getExceptionMessage()
+    set {_event} to (custom event "IllegalPacketEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Lootable Inventory Replenish
+
+import:
+    com.destroystokyo.paper.loottable.LootableInventoryReplenishEvent
+
+event "LootableInventoryReplenishEvent":
+    patterns:
+        [on] lootable inventory replenish
+    event-values: player, inventory
+
+on LootableInventoryReplenishEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::inventory} to event.getInventory()
+    set {_event} to (custom event "LootableInventoryReplenishEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Advancement Criterion Grant
+
+import:
+    com.destroystokyo.paper.event.player.PlayerAdvancementCriterionGrantEvent
+
+event "PlayerAdvancementCriterionGrantEvent":
+    patterns:
+        [on] [player] advancement criteri(a|on) [advance]
+    event-values: player, advancement, advancement progress, string
+
+on PlayerAdvancementCriterionGrantEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::advancement} to event.getAdvancement()
+    set {_eventValues::advancementProgress} to event.getAdvancementProgress()
+    set {_eventValues::string} to event.getCriterion()
+    set {_event} to (custom event "PlayerAdvancementCriterionGrantEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Animation Event
+
+import:
+    org.bukkit.event.player.PlayerAnimationEvent
+
+event "PlayerAnimationEvent":
+    patterns:
+        [on] [player] advancement criteri(a|on)
+    event-values: player, string
+
+on PlayerAnimationEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::string} to event.getAnimationType()
+    set {_event} to (custom event "PlayerAnimationEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Attack Entity Cooldown Reset
+
+import:
+    com.destroystokyo.paper.event.player.PlayerAttackEntityCooldownResetEvent
+
+event "PlayerAttackEntityCooldownResetEvent":
+    patterns:
+        [on] [player] attack [entity] cooldown reset
+    event-values: player, entity, boolean
+
+on PlayerAttackEntityCooldownResetEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::entity} to event.getAttackedEntity()
+    set {_eventValues::boolean} to event.getCooledAttackStrength()
+    set {_event} to (custom event "PlayerAttackEntityCooldownResetEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Bed Fail Enter
+
+import:
+    io.papermc.paper.event.player.PlayerBedFailEnterEvent
+
+event "PlayerBedFailEnterEvent":
+    patterns:
+        [on] [player] bed fail[ing] enter
+    event-values: player, string, block, boolean, string, block action
+
+on PlayerBedFailEnterEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::string::failReason} to event.getFailReason()
+    set {_eventValues::block} to event.getBed()
+    set {_eventValues::boolean} to event.getWillExplode()
+    set {_eventValues::string::message} to event.getMessage()
+    set {_eventValues::blockAction} to event.enterAction()
+    set {_event} to (custom event "PlayerBedFailEnterEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Bucket Interact
+
+import:
+    org.bukkit.event.player.PlayerBucketEvent
+
+event "PlayerBucketEvent":
+    patterns:
+        [on] [player] bucket interact[ion]
+    event-values: player, block, blockface, material, itemstack, equipmentslot
+
+on PlayerBucketEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getBlock()
+    set {_eventValues::blockface} to event.getBlockClicked()
+    set {_eventValues::material} to event.getBucket()
+    set {_eventValues::itemstack} to event.getItemStack()
+    set {_eventValues::equipmentslot} to event.getHand()
+    set {_event} to (custom event "PlayerBucketEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Player Channel Event (This event is called after a player registers or unregisters a new plugin channel)
+
+import:
+    org.bukkit.event.player.PlayerChannelEvent
+    org.bukkit.event.player.PlayerRegisterChannelEvent
+    org.bukkit.event.player.PlayerUnregisterChannelEvent
+
+
+event "PlayerChannelEvent":
+    patterns:
+        [on] [player] channel
+    event-values: player, string
+
+on PlayerChannelEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::string} to event.getChannel()
+    set {_event} to (custom event "PlayerChannelEvent" using event-values {_eventValues::*})
+    call {_event}
+
+event "PlayerRegisterChannelEvent":
+    patterns:
+        [on] [player] register channel
+    event-values: player, string
+
+on PlayerRegisterChannelEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::string} to event.getChannel()
+    set {_event} to (custom event "PlayerRegisterChannelEvent" using event-values {_eventValues::*})
+    call {_event}
+
+event "PlayerUnregisterChannelEvent":
+    patterns:
+        [on] [player] register channel
+    event-values: player, string
+
+on PlayerUnregisterChannelEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::string} to event.getChannel()
+    set {_event} to (custom event "PlayerUnregisterChannelEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Client Load World
+
+import:
+    io.papermc.paper.event.player.PlayerClientLoadedWorldEvent
+
+event "PlayerClientLoadedWorldEvent":
+    patterns:
+        [on] client load[ing] world
+    event-values: player, boolean
+
+on PlayerClientLoadedWorldEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::boolean} to event.isTimeout()
+    set {_event} to (custom event "PlayerClientLoadedWorldEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Client Options Change
+
+import:
+    com.destroystokyo.paper.event.player.PlayerClientOptionsChangeEvent
+
+event "PlayerClientOptionsChangeEvent":
+    patterns:
+        [on] [player] client( |-)options change
+    event-values: player, boolean, boolean, string, equipmentslot, integer, boolean, boolean, boolean, boolean, boolean, boolean, boolean, integer, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean, boolean
+
+on PlayerClientOptionsChangeEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::boolean::allowsServerListings} to event.allowsServerListings()
+    set {_eventValues::boolean::chatVisibility} to event.getChatVisibility()
+    set {_eventValues::string} to event.getLocale()
+    set {_eventValues::equipmentslot} to event.getMainHand()
+    set {_eventValues::boolean::particleVisibility} to event.getParticleVisibility()
+    set {_eventValues::integer::skinParts::raw} to event.getRaw()
+    set {_eventValues::boolean::skinParts::capeEnabled} to event.hasCapeEnabled()
+    set {_eventValues::boolean::skinParts::hatsEnabled} to event.hasHatsEnabled()
+    set {_eventValues::boolean::skinParts::jacketEnabled} to event.hasJacketEnabled()
+    set {_eventValues::boolean::skinParts::leftPantsEnabled} to event.hasLeftPantsEnabled()
+    set {_eventValues::boolean::skinParts::LeftSleeveEnabled} to event.hasLeftSleeveEnabled()
+    set {_eventValues::boolean::skinParts::rightPantsEnabled} to event.hasRightPantsEnabled()
+    set {_eventValues::boolean::skinParts::rightSleeveEnabled} to event.hasRightSleeveEnabled()
+    set {_eventValues::integer::viewDistance} to event.getViewDistance()
+    set {_eventValues::boolean::allowServerListingsChanged} to event.hasAllowServerListingsChanged()
+    set {_eventValues::boolean::chatColorsEnabled} to event.hasChatColorsEnabled()
+    set {_eventValues::boolean::chatColorsEnabledChanged} to event.hasChatColorsEnabledChanged()
+    set {_eventValues::boolean::localeChange} to event.hasLocaleChanged()
+    set {_eventValues::boolean::mainHandChanged} to event.hasMainHandChanged()
+    set {_eventValues::boolean::particleVisibilityChanged} to event.hasParticleVisibilityChanged()
+    set {_eventValues::boolean::skinPartsChanged} to event.hasSkinPartsChanged()
+    set {_eventValues::boolean::TextFilteringChanged} to event.hasTextFilteringChanged()
+    set {_eventValues::boolean::textFilteringEnabled} to event.hasTextFilteringEnabled()
+    set {_eventValues::boolean::viewDistanceChanged} to event.hasViewDistanceChanged()
+    set {_event} to (custom event "PlayerClientOptionsChangeEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Command Pre Process
+
+import:
+    org.bukkit.event.player.PlayerCommandPreprocessEvent
+
+event "PlayerCommandPreprocessEvent":
+    patterns:
+        [on] [player] command pre[ |-]process
+    event-values: player, string, audiences
+
+on PlayerCommandPreprocessEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::string} to event.getMessage()
+    set {_eventValues::audiences} to event.getRecipients()
+    set {_event} to (custom event "PlayerCommandPreprocessEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Flower Pot Manipulate
+
+import:
+    io.papermc.paper.event.player.PlayerFlowerPotManipulateEvent
+
+event "PlayerFlowerPotManipulateEvent":
+    patterns:
+        [on] [player] flower( |-)pot manipulat(ion|e)
+    event-values: player, block, itemstack, boolean
+
+on PlayerFlowerPotManipulateEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getFlowerpot()
+    set {_eventValues::itemstack} to event.getItem()
+    set {_eventValues::boolean} to event.isPlacing()
+    set {_event} to (custom event "PlayerFlowerPotManipulateEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Hide Entity
+
+import:
+    org.bukkit.event.player.PlayerHideEntityEvent
+
+event "PlayerHideEntityEvent":
+    patterns:
+        [on] [player] hid(e|ing) [[of] %entitydata%]
+    event-values: player, entity
+    check:
+        if expr-1 is set:
+            if event.getEntity() = expr-1:
+                continue
+            else if event.getEntity() != expr-1:
+                stop
+
+on PlayerHideEntityEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::entity} to event.getEntity()
+    set {_event} to (custom event "PlayerHideEntityEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Insert Lectern Event
+
+import:
+    io.papermc.paper.event.player.PlayerInsertLecternBookEvent
+
+event "PlayerInsertLecternBookEvent":
+    patterns:
+        [on] [player] tak(e|ing) [of] lectern book
+    event-values: player, block, itemstack
+
+on PlayerInsertLecternBookEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getBlock()
+    set {_eventValues::itemstack} to event.getBook()
+    set {_event} to (custom event "PlayerInsertLecternBookEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Armor Stand Manipulation
+
+import:
+    org.bukkit.event.player.PlayerArmorStandManipulateEvent
+
+event "PlayerArmorStandManipulateEvent":
+    patterns:
+        [on] [player] armor[ |-]stand manipulat(e|ion)
+    event-values: player, entity, equipmentslot
+
+on PlayerArmorStandManipulateEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::entity} to event.getRightClicked()
+    set {_eventValues::equipmentslot} to event.getHand()
+    set {_event} to (custom event "PlayerArmorStandManipulateEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Item Frame Change
+
+import:
+    io.papermc.paper.event.player.PlayerItemFrameChangeEvent
+
+event "PlayerItemFrameChangeEvent":
+    patterns:
+        [on] [player] item( |-)frame change
+    event-values: player, block, itemstack, click type
+
+on PlayerItemFrameChangeEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getItemFrame()
+    set {_eventValues::itemStack} to event.getItemStack()
+    set {_eventValues::clickType} to event.getAction()
+    set {_event} to (custom event "PlayerItemFrameChangeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Item Group Cooldown Event
+
+import:
+    io.papermc.paper.event.player.PlayerItemGroupCooldownEvent
+
+event "PlayerItemGroupCooldownEvent":
+    patterns:
+        [on] [player] item( |-)group cooldown
+    event-values: player, namespacedkey, integer
+
+on PlayerItemGroupCooldownEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::namespacedKey} to event.getCooldownGroup()
+    set {_eventValues::integer} to event.getCooldown()
+    set {_event} to (custom event "PlayerItemGroupCooldownEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Lectern Page Change Event
+
+import:
+    io.papermc.paper.event.player.PlayerLecternPageChangeEvent
+
+event "PlayerLecternPageChangeEvent":
+    patterns:
+        [on] [player] lectern page chang(e|ing) [l:left|r:right]
+    event-values: player, block, itemStack, direction, integer, integer
+    check:
+        if first element of parse tags contains "l":
+            if event.getPageChangeDirection() = left:
+                stop
+        else if first element of parse tags contains "r":
+            if event.getPageChangeDirection() = right:
+                stop
+
+on PlayerLecternPageChangeEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getLectern()
+    set {_eventValues::itemStack} to event.getBook()
+    set {_eventValues::direction} to event.getPageChangeDirection()
+    set {_eventValues::integer::oldPage} to event.getOldPage()
+    set {_eventValues::integer::newPage} to event.getNewPage()
+    set {_event} to (custom event "PlayerLecternPageChangeEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Connection Validate Login Event
+
+import:
+    io.papermc.paper.event.connection.PlayerConnectionValidateLoginEvent
+
+event "PlayerConnectionValidateLoginEvent":
+    patterns:
+        [on] [player] connect[ion] validat(e|ing) (login|logging in|join|joining[in])
+    event-values: player connection, string, boolean # Don't mind the IntelliSkript error, it's wrong. It doesn't see `player connection` as a valid type. (although it is in SkBee)
+
+on PlayerConnectionValidateLoginEvent:
+    set {_eventValues::playerConnection} to event.getConnection()
+    set {_eventValues::string} to event.getKickMessage()
+    set {_eventValues::boolean} to event.isAllowed()
+    set {_event} to (custom event "PlayerConnectionValidateLoginEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Server Full Check
+
+import:
+    io.papermc.paper.event.player.PlayerServerFullCheckEvent
+
+event "PlayerServerFullCheckEvent":
+    patterns:
+        [on] [player] server full[ |-]check
+    event-values: object, string, boolean
+
+on PlayerServerFullCheckEvent:
+    set {_eventValues::object} to event.getPlayerProfile()
+    if event.isAllowed() is false:
+        set {_eventValues::string} to event.deny()
+    else if event.isAllowed() is true:
+        set {_eventValues::string} to event.allow()
+    set {_eventValues::boolean} to event.isAllowed()
+    set {_event} to (custom event "PlayerServerFullCheckEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Loom Pattern Select
+
+import:
+    io.papermc.paper.event.player.PlayerLoomPatternSelectEvent
+
+event "PlayerLoomPatternSelectEvent":
+    patterns:
+        [on] [player] loom( |-)pattern select[ing|ion] [of] %bannerpatterntype%
+        [on] [player] select[ing] loom( |-)pattern [of] %bannerpatterntype%
+    event-values: player, inventory, bannerpattern type
+    check:
+        if expr-1 is set:
+            expr-1 is event.getPatternType():
+                continue
+
+on PlayerLoomPatternSelectEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::inventory} to event.getLoomInventory()
+    set {_eventValues::bannerPatternType} to event.getPatternType()
+    set {_event} to (custom event "PlayerLoomPatternSelectEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Map Filled Event
+
+import:
+    io.papermc.paper.event.player.PlayerMapFilledEvent
+
+event "PlayerMapFilledEvent":
+    patterns:
+        [on] [player] map fill[ing]
+    event-values: player, itemStack, itemStack
+
+on PlayerMapFilledEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::itemStack::originalItem} to event.getOriginalItem()
+    set {_eventValues::itemStack::createdMap} to event.getCreatedMap()
+    set {_event} to (custom event "PlayerMapFilledEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Player Naming Entity
+
+import:
+    io.papermc.paper.event.player.PlayerNameEntityEvent
+
+event "PlayerNameEntityEvent":
+    patterns:
+        [on] [player] nam(e|ing) [a|an] entity
+        [on] [player] nam(e|ing) [a|an] %entitydata%
+    event-values: player, livingEntity, string, boolean
+    check:
+        if expr-1 is set:
+            event.getEntity() = expr-1:
+                continue
+
+on PlayerNameEntityEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::livingEntity} to event.getEntity()
+    set {_eventValues::string} to event.getName()
+    set {_eventValues::boolean} to event.isPersistent()
+    set {_event} to (custom event "PlayerNameEntityEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Player Naturally Spawn Creatures (Called when a player loads a chunk and the server tries to spawn monsters)
+
+import:
+    com.destroystokyo.paper.event.entity.PlayerNaturallySpawnCreaturesEvent
+
+event "PlayerNaturallySpawnCreaturesEvent":
+    patterns:
+        [on] [player] natural[ly] spawn[ing] [a] creature[s]
+    event-values: player, number
+
+on PlayerNaturallySpawnCreaturesEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::number} to event.getSpawnRadius()
+    set {_event} to (custom event "PlayerNaturallySpawnCreaturesEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Open Sign Event
+
+import:
+    io.papermc.paper.event.player.PlayerOpenSignEvent
+
+event "PlayerOpenSignEvent":
+    patterns:
+        [on] [player] open[ing] sign [at %locations%]
+    event-values: player, block, blockface, string
+    check:
+        if exprs-1 is set:
+            loop exprs-1:
+                if location of event.getSign() = loop-value:
+                    continue
+
+on PlayerOpenSignEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getSign()
+    set {_eventValues::blockface} to event.getSide()
+    set {_eventValues::string} to event.getCause()
+    set {_event} to (custom event "PlayerOpenSignEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Recipe Book Settings Change (not to be confused with SkBee's Recipe Book Click)
+
+import:
+    org.bukkit.event.player.PlayerRecipeBookSettingsChangeEvent
+
+event "PlayerRecipeBookSettingsChangeEvent":
+    patterns:
+        [on] [player] recipe( |-)book setting[s] change
+    event-values: player, recipe type, boolean, boolean
+
+on PlayerRecipeBookSettingsChangeEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::recipeType} to event.getRecipeBookType()
+    set {_eventValues::boolean::open} to event.isOpen()
+    set {_eventValues::boolean::filtering} to event.isFiltering()
+    set {_event} to (custom event "PlayerRecipeBookSettingsChangeEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Player Set Spawn Event
+
+import:
+    com.destroystokyo.paper.event.player.PlayerSetSpawnEvent
+
+event "PlayerSetSpawnEvent":
+    patterns:
+        [on] [player] set[ting] spawn
+    event-values: player, string, location, boolean, boolean, string
+
+on PlayerSetSpawnEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::string::cause} to event.getCause()
+    set {_eventValues::location} to event.getLocation()
+    set {_eventValues::boolean::forced} to event.isForced()
+    set {_eventValues::boolean::notifyPlayer} to event.willNotifyPlayer()
+    set {_eventValues::string::notification} to event.getNotification()
+    set {_event} to (custom event "PlayerSetSpawnEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Player Shear Block (Not to be confused with Shear Entity, this event is called when using shears on a block. ex: Shearing glowberries)
+
+import:
+    io.papermc.paper.event.block.PlayerShearBlockEvent
+
+event "PlayerShearBlockEvent":
+    patterns:
+        [on] [player] shear[ing] [a] block
+        [on] [player] shear[ing] [a|an] %blockdata%
+    event-values: player, block, itemStack, equipmentslot, itemStacks
+    check:
+        if expr-1 is set:
+            expr-1 = event.getBlock():
+                continue
+
+on PlayerShearBlockEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getBlock()
+    set {_eventValues::itemStack} to event.getItem()
+    set {_eventValues::equipmentslot} to event.getHand()
+    set {_eventValues::itemStacks} to event.getDrops()
+    set {_event} to (custom event "PlayerShearBlockEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Player Shield Disable
+
+import:
+    io.papermc.paper.event.player.PlayerShieldDisableEvent
+
+event "PlayerShieldDisableEvent":
+    patterns:
+        [on] [player] shield disabl(e|ing)
+    event-values: player, entity, integer
+
+on PlayerShieldDisableEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::entity} to event.getDamager()
+    set {_eventValues::integer} to event.getCooldown()
+    set {_event} to (custom event "PlayerShieldDisableEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Player Show Entity (This event is only called when the entity's visibility status is actually changed. This event is called regardless of whether the entity was within tracking range.)  
+
+import:
+    org.bukkit.event.player.PlayerShowEntityEvent
+
+event "PlayerShowEntityEvent":
+    patterns:
+        [on] [player] show[ing] [of] entity
+        [on] [player] show[ing] [of] %entitydata%
+    event-values: player, entity
+    check:
+        if expr-1 is set:
+            expr-1 = event.getEntity():
+                continue
+
+on PlayerShowEntityEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::entity} to event.getEntity()
+    set {_event} to (custom event "PlayerShowEntityEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Statistic Increment Event
+
+import:
+    org.bukkit.event.player.PlayerStatisticIncrementEvent
+
+event "PlayerStatisticIncrementEvent":
+    patterns:
+        [on] [player] stat[s|istic[s]] increment[ing]
+    event-values: player, statistic, integer, integer, material, entityType
+
+on PlayerStatisticIncrementEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::statistic} to event.getStatistic()
+    set {_eventValues::integer::initialValue} to event.getOldValue()
+    set {_eventValues::integer::newValue} to event.getNewValue()
+    set {_eventValues::material} to event.getMaterial()
+    set {_eventValues::entityType} to event.getEntityType()
+    set {_event} to (custom event "PlayerStatisticIncrementEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Take Lecern Book Event
+
+import:
+    org.bukkit.event.player.PlayerTakeLecternBookEvent
+
+event "PlayerTakeLecternBookEvent":
+    patterns:
+        [on] [player] tak(e|ing) lectern book [at %locations%]
+    event-values: player, block, location
+    check:
+        if exprs-1 is set:
+            loop exprs-1:
+                loop-value = (location of event.getLectern()):
+                    continue
+
+on PlayerTakeLecternBookEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::block} to event.getLectern()
+    set {_eventValues::location} to (location of event.getLectern())
+    set {_event} to (custom event "PlayerTakeLecternBookEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Toggle Entity Age Lock (Version 26.1+, called when a player used a golden dandelion on a baby entity)
+
+import:
+    io.papermc.paper.event.player.PlayerToggleEntityAgeLockEvent # If your server version isn't on 26.1+, ignore this error.
+
+event "PlayerToggleEntityAgeLockEvent":
+    patterns:
+        [on] [player] toggl(e|ing) entity['s] age lock
+        [on] [player] toggl(e|ing) %entitydata%['s] age lock
+    event-values: player, livingEntity, itemStack, equipmentslot, boolean
+
+on PlayerToggleEntityAgeLockEvent: # If your server version isn't on 26.1+, ignore this error.
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::livingEntity} to event.getEntity()
+    set {_eventValues::itemStack} to event.getItem()
+    set {_eventValues::equipmentslot} to event.getHand()
+    set {_eventValues::boolean} to event.isAgeLocked()
+    set {_event} to (custom event "PlayerToggleEntityAgeLockEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# Player Untrack Entity (not to be confused with SkBee's track entity, this event is called when a Player untracks an Entity.)
+
+import:
+    io.papermc.paper.event.player.PlayerUntrackEntityEvent
+
+event "PlayerUntrackEntityEvent":
+    patterns:
+        [on] [player] untrack[ing] entity
+        [on] [player] entity untrack[ing]
+        [on] [player] untrack[ing] %entitydata%
+        [on] [player] %entitydata% untrack[ing]
+    event-values: player, entity
+    check:
+        if expr-1 is set:
+            expr-1 = event.getEntity():
+                continue
+
+on PlayerUntrackEntityEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::entity} to event.getEntity()
+    set {_event} to (custom event "PlayerUntrackEntityEvent" using event-values {_eventValues::*})
+    call {_event}
+
+# Player Velocity Change
+
+import:
+    org.bukkit.event.player.PlayerVelocityEvent
+
+event "PlayerVelocityEvent":
+    patterns:
+        [on] [player] velocity [change]
+    event-values: player, vector
+
+on PlayerVelocityEvent:
+    set {_eventValues::player} to event.getPlayer()
+    set {_eventValues::vector} to event.getVecloity()
+    set {_event} to (custom event "PlayerVelocityEvent" using event-values {_eventValues::*})
+    call {_event}
+    if {_event}.isCancelled():
+        cancel event
+        event.setCancelled(true)
+
+# End of Player Events

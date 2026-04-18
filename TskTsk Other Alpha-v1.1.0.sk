@@ -1,0 +1,262 @@
+# TskTsk (Made by itstwist3d)
+
+# If you have bugs, make a post on our github or DM @itstwist3d on Discord.
+# Github: 
+
+
+# Tested with:
+    # Skript 2.14.3
+    # Skript-reflect 2.6.3
+    # SkBee 3.18.2
+    # Paper 1.21.10 (26.1+ Reccomended)
+# If you have versions lower than with what tested, TskTsk may not work properly.
+# If you use this, I reccomend also using HypersLib by HyperDondon
+# If you own any snippets I used for TskTsk, you may DM me to take it down.
+
+# CUSTOM EVENTS ---
+# Please see TskTsk Events
+# I'm sorry, it's a limitation with Skript-Reflect
+
+# Expressions -----
+
+# Time Format
+local function timeFormat(t: timespan) :: string:
+    set {_s} to "%{_t}%"
+    replace all (" seconds", " second") with "s" in {_s}
+    replace all (" minutes", " minute") with "m" in {_s}
+    replace all (" hours", " hour") with "h" in {_s}
+    replace all (" days", "day") with "d" in {_s}
+    replace all (" months", "month") with "m" in {_s}
+    replace all (" years", "year") with "y" in {_s}
+    return {_s}
+expression:
+    patterns:
+        time [(format[ted])] from %timespan%
+        (%timespan% [(with | as)] time[( format)])
+    return type: string
+    get:
+        return timeFormat(expr-1)
+
+# More Victims (Alias)
+
+import:
+    org.bukkit.event.entity.EntityDeathEvent
+    org.bukkit.event.entity.EntityDamageEvent
+    org.bukkit.event.entity.ProjectileHitEvent
+    org.bukkit.event.vehicle.VehicleDamageEvent
+    org.bukkit.event.vehicle.VehicleDestroyEvent
+
+expression:
+    patterns:
+        [the] (victim|(damaged|attacked) (entity|victim))
+    usable in:
+        EntityDeathEvent
+        EntityDamageEvent
+        ProjectileHitEvent
+        VehicleDamageEvent
+        VehicleDestroyEvent
+    parse:
+        set {_victim} to the damaged entity # Don't mind the error here while reloading
+    get:
+        return {_victim}
+
+# Body Yaw
+# Credit: novystar (you had the idea before i did :sob: I did modify it tho.)
+
+local function bodyYaw(ent: living entity) :: number:
+    return mod({_ent}.getBodyYaw(), 360)
+
+expression:
+    patterns:
+        %livingentities%'s body yaw
+        body yaw of %livingentities%
+    get:
+        loop exprs-1:
+            return bodyYaw(loop-value)
+
+# Server Uptime
+# Credit: p0wders_
+
+import:
+    java.lang.management.ManagementFactory
+
+function serverLaunchTime() :: date:
+    return unix date of (floor((((unix timestamp of now) * 1000) - ManagementFactory.getRuntimeMXBean().getUptime()) / 1000))
+
+expression:
+    patterns:
+        [the] server's (up|launch)[ ]time # Only works with getting. The launch time cannot be set.
+    get:
+        return serverLaunchTime()
+
+# HSV Values to RGB
+
+local function HSVtoRGB(h: number, s: number, v: number) :: color:
+    set {_i} to floor({_h} * 6)
+    set {_f} to {_h} * 6 - {_i}
+    set {_p} to {_v} * (1 - {_s})
+    set {_q} to {_v} * (1 - {_f} * {_s})
+    set {_t} to {_v} * (1 - (1 - {_f}) * {_s})
+    set {_mod} to mod({_i}, 6)
+    if {_mod} = 0:
+        set {_r} to {_v}
+        set {_g} to {_t}
+        set {_b} to {_p}
+    else if {_mod} = 1:
+        set {_r} to {_q}
+        set {_g} to {_v}
+        set {_b} to {_p}
+    else if {_mod} = 2:
+        set {_r} to {_p}
+        set {_g} to {_v}
+        set {_b} to {_t}
+    else if {_mod} = 3:
+        set {_r} to {_p}
+        set {_g} to {_q}
+        set {_b} to {_v}
+    else if {_mod} = 4:
+        set {_r} to {_t}
+        set {_g} to {_p}
+        set {_b} to {_v}
+    else if {_mod} = 5:
+        set {_r} to {_v}
+        set {_g} to {_p}
+        set {_b} to {_q}
+    return rgb({_r} * 255, {_g} * 255, {_b} * 255)
+
+expression:
+    patterns:
+        rgb [color] conver(t|sion|ted) (from|of) hsv [color] %number%[,|and] %number%[,|and] %number%
+        hsv [color] to rgb [color] (from|of) %number%[,|and] %number%[,|and] %number%
+    get:
+        return HSVtoRGB(expr-1, expr-2, expr-3)
+
+# Effects -----
+
+# Fake Spectator Mode (Effect)
+# Credit: Erenkarakal
+
+import:
+    net.minecraft.network.protocol.game.ClientboundGameEventPacket
+    net.minecraft.network.protocol.game.ClientboundGameEventPacket$Type as GameEventType
+
+function start_spectate(p: player):
+    set {_reason} to new GameEventType(3.intValue())
+    set {_packet} to new ClientboundGameEventPacket({_reason}, 3.intValue())
+    {_p}.getHandle().connection.sendPacket({_packet})
+    
+    allow flight for {_p}       
+    hide {_p} from all players  
+
+function stop_spectate(p: player):
+    reveal {_p} to all players
+    
+    set {_gamemode} to {_p}'s gamemode
+    set {_p}'s gamemode to spectator
+    set {_p}'s gamemode to {_gamemode}
+
+effect:
+    patterns:
+        (start: start|stop: stop) fake spectator [for|of] %players%
+    trigger:
+        loop exprs-1:
+            if parse tags contain "start": # Also don't mind this indentation error in IntelliSkript, I assure you, IntelliSkript is drunk.
+                start_spectate(loop-value)
+            else if parse tags contain "stop":
+                stop_spectate(loop-value)
+
+# Debugger
+# Credit to whoever made this lol (i honestly have no idea who) 
+
+import:
+    ch.njol.skript.registrations.Classes
+
+effect:
+    patterns:
+        debug %object% [to %commandsenders%]
+    parse:
+        set {_expr} to expr-1
+        continue
+    trigger:
+        set {_info::1} to "&8[&cDebug&8] "
+        set {_info::2} to "&7Input: &f%{_expr}%"
+        set {_info::3} to join "&7Output: &f", Classes.toString(expr-1)
+        # requires SkBee 2.5.2+ for the skript type expression
+        set {_info::4} to join "&7Type: &f", (skript type of expr-1) ? "Undefined/Unknown" # unknown/undefined is for unset variables
+        send (join {_info::*} with " ") to exprs-2
+
+# LuckPerms Permission
+import:
+    net.luckperms.api.LuckPermsProvider
+    net.luckperms.api.model.user.User
+    net.luckperms.api.node.Node
+
+function AddPermission(p: Player, permission: String):
+    LuckPermsProvider.get().getUserManager().getUser({_p}.getUniqueId()).data().add(Node.builder({_permission}).build())
+    LuckPermsProvider.get().getUserManager().saveUser(LuckPermsProvider.get().getUserManager().getUser({_p}.getUniqueId()))
+
+function RemovePermission(p: Player, permission: String):
+    LuckPermsProvider.get().getUserManager().getUser({_p}.getUniqueId()).data().remove(Node.builder({_permission}).build())
+    LuckPermsProvider.get().getUserManager().saveUser(LuckPermsProvider.get().getUserManager().getUser({_p}.getUniqueId()))
+    
+effect:
+    patterns:
+        (add: add|remove: remove) perm[s|ission] %string% to %offlineplayers%
+    trigger:
+        loop exprs-2:
+            if parse tags contain "add":
+                AddPermission(loop-value, expr-1)
+            else if parse tags contain "remove":
+                RemovePermission(loop-value, expr-1)
+
+# Hide Player Without Tab Hiding
+# Credit: Owlbe on Discord
+import:
+    net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
+    org.bukkit.craftbukkit.entity.CraftPlayer
+function hide(p: player):
+    loop all players:
+        loop-player is not {_p}
+        set {_id} to loop-value.getEntityId()
+        set {_packet} to new ClientboundRemoveEntitiesPacket({_id})
+        {_p}.getHandle().connection.send({_packet})
+function reveal(p: player):
+    set {_sk} to (instance of plugin "Skript")
+    loop all players:
+        {_p}.hideEntity({_sk},loop-player)
+        {_p}.showEntity({_sk},loop-player)
+effect:
+    patterns:
+        [hide: hide| show: (show|reveal)] %players%
+    trigger:
+        if parse tags contain "hide":
+            loop exprs-1: # Ignore indentation error in IntelliSkript
+                hide(loop-value)
+        else if parse tags contain "show":
+            loop exprs-1: # Ignore indentation error in IntelliSkript
+                reveal(loop-value)
+
+# Conditions -----
+
+# Is Crouching / Shifting (Is Sneaking Alias)
+condition %players% is[(negative:( not|n't))] (crouching|shifting):
+    check:
+        loop exprs-1:
+            if first element of parse tags contain "negative":
+                if loop-value isn't sneaking:
+                    continue
+            else if first element of parse tags doesn't contain "negative":
+                if loop-value is sneaking:
+                    continue
+
+
+
+# Functions -----
+
+# Print (like in other languages. ex: Python)
+function print(print: object):
+    broadcast {_print}
+
+# Miscallaneous -----
+
+# Nothing here to see yet! Hope you're enjoying TskTsk so far! - Twisted
